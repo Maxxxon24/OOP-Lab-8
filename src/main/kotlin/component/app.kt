@@ -52,82 +52,92 @@ class App : RComponent<AppProps, AppState>() {
             route("/editlessons") { editLessonPage() }
 
             route("/lessons",
-                exact = true,
-                render = {
-                    anyList(state.lessons, "Lessons", "/lessons")
-                }
+                    exact = true,
+                    render = {
+                        anyList(state.lessons, "Lessons", "/lessons", { removeLessonByIndex(it) },false)
+                    }
             )
 
             route("/students",
-                exact = true,
-                render = {
-                    anyList(state.students, "Students", "/students")
-                }
+                    exact = true,
+                    render = {
+                        anyList(state.students, "Students", "/students", { removeStudentByIndex(it) },false)
+                    }
             )
 
             route("/lessons/:number",
-                render = { route_props: RouteResultProps<RouteNumberResult> ->
-                    val num = route_props.match.params.number.toIntOrNull() ?: -1
-                    val lesson = state.lessons.getOrNull(num)
-                    if (lesson != null)
-                        anyFull(
-                            RBuilder::student,
-                            lesson,
-                            state.students,
-                            state.presents[num]
-                        ) { onClick(num, it) }
-                    else
-                        p { +"No such lesson" }
-                }
+                    render = { route_props: RouteResultProps<RouteNumberResult> ->
+                        val num = route_props.match.params.number.toIntOrNull() ?: -1
+                        val lesson = state.lessons.getOrNull(num)
+                        if (lesson != null)
+                            anyFull(
+                                    RBuilder::student,
+                                    lesson,
+                                    state.students,
+                                    state.presents[num]
+                            ) { onClick(num, it) }
+                        else
+                            p { +"No such lesson" }
+                    }
             )
 
             route("/students/:number",
-                render = { route_props: RouteResultProps<RouteNumberResult> ->
-                    val num = route_props.match.params.number.toIntOrNull() ?: -1
-                    val student = state.students.getOrNull(num)
-                    if (student != null)
-                        anyFull(
-                            RBuilder::lesson,
-                            student,
-                            state.lessons,
-                            state.presents.map {
-                                it[num]
-                            }.toTypedArray()
-                        ) { onClick(it, num) }
-                    else
-                        p { +"No such student" }
-                }
+                    render = { route_props: RouteResultProps<RouteNumberResult> ->
+                        val num = route_props.match.params.number.toIntOrNull() ?: -1
+                        val student = state.students.getOrNull(num)
+                        if (student != null)
+                            anyFull(
+                                    RBuilder::lesson,
+                                    student,
+                                    state.lessons,
+                                    state.presents.map {
+                                        it[num]
+                                    }.toTypedArray()
+                            ) { onClick(it, num) }
+                        else
+                            p { +"No such student" }
+                    }
             )
 
         }
     }
-
+    private fun removeStudentByIndex(index:Int): (Event) -> Unit= {
+        setState {
+            students = students.toMutableList().apply { removeAt( index ) }.toTypedArray()
+        }
+    }
+    private fun removeLessonByIndex(index:Int): (Event) -> Unit = {
+        setState {
+            lessons = lessons.toMutableList().apply { removeAt( index ) }.toTypedArray()
+        }
+    }
     private fun RElementBuilder<RProps>.editStudentPage(): ReactElement {
         return anyListRedact(
-            "Students",
-            "/students",
-            RBuilder::editPage,
-            RBuilder::anyList,
-            state.students,
-            removeStudent(),
-            editStudent(),
-            newStudent()
+                "Students",
+                "/students",
+                RBuilder::editPage,
+                RBuilder::anyList,
+                state.students,
+                removeStudent(),
+                editStudent(),
+                newStudent(),
+                { removeStudentByIndex(it) }
         )
     }
 
     private fun RElementBuilder<RProps>.editLessonPage(): ReactElement {
         return anyListRedact(
-            "Lessons",
-            "/lessons",
-            RBuilder::editPage,
-            RBuilder::anyList,
-            state.lessons,
-            removeLesson(),
-            editLesson(),
-            newLesson()
+                "Lessons",
+                "/lessons",
+                RBuilder::editPage,
+                RBuilder::anyList,
+                state.lessons,
+                removeLesson(),
+                editLesson(),
+                newLesson(),
+                { removeLessonByIndex(it) }
         )
     }
-
     private fun newStudent(): EFT = {
         val newStudent = getInputValue("studentsAdd")
         setState { students += Student(getName(newStudent), getSName(newStudent)) }
@@ -135,8 +145,8 @@ class App : RComponent<AppProps, AppState>() {
 
     private fun newLesson(): EFT = {
         setState {
-	        lessons += Lesson( getInputValue("lessonsAdd") )
-	        presents += arrayOf( Array(state.students.size ) { false })
+            lessons += Lesson( getInputValue("lessonsAdd") )
+            presents += arrayOf( Array(state.students.size ) { false })
         }
     }
 

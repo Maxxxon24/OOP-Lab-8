@@ -31,17 +31,6 @@ fun <Z> editPage(AnyListRedactProps: AnyListRedactProps<Z>) =
             }
 
             br {  }
-            span { +"Удалить  : " }
-            input(InputType.number) {
-                attrs.id = "${current}Delete"
-                attrs.placeholder = "delete by index"
-            }
-            button{
-                +"delete $current"
-                attrs.onClickFunction = AnyListRedactProps.removeFunction
-            }
-
-            br {  }
             span { +"Добавить: " }
             input(InputType.text) {
                 attrs.id = "${current}Add"

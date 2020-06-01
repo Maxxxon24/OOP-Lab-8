@@ -10,7 +10,6 @@ interface AnyListRedactProps<Z> : RProps {
     var name: String
     var path: String
     var newFunction: EFT
-    var removeFunction: EFT
     var editFunction:  EFT
     var del:(Int) -> (Event) -> Unit
 }
@@ -40,7 +39,6 @@ fun <Z> RBuilder.anyListRedact(
     attrs.list = list
     attrs.name = name
     attrs.path = path
-    attrs.removeFunction = removeFunction
     attrs.editFunction = editFunction
     attrs.newFunction = newFunction
     attrs.del = del
